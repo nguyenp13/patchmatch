@@ -50,12 +50,14 @@ void usage() {
 
 int main(int argc, char* argv[]) {
     
+    std::chrono::high_resolution_clock::time_point start_time = std::chrono::high_resolution_clock::now();
+    
     if (argc<4) {
         usage();
     }
-
+    
     std::srand( std::time(NULL) );
-
+    
     static const char* A_name = argv[1];
     static const char* B_name = argv[2];
     static const char* output_name = argv[3];
@@ -133,6 +135,12 @@ int main(int argc, char* argv[]) {
     NEWLINE;
     cout << "Final Total Patch Distance: " << total_patch_distance << endl;
     cout << "Final Mean Patch Distance:  " << DOUBLE(total_patch_distance)/DOUBLE(Ann_height*Ann_width) << endl;
+    
+    std::chrono::high_resolution_clock::time_point end_time = std::chrono::high_resolution_clock::now();
+    
+    NEWLINE;
+    cout << "Total Run Time: " << (std::chrono::duration_cast<std::chrono::nanoseconds>(end_time-start_time).count()) / (pow(10.0,9.0)) << " seconds." << endl;
+    NEWLINE;
     
     return 0;
 }
