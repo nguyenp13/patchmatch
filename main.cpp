@@ -4,6 +4,7 @@
 This is our main executable that wraps our PatchMatch implementation. See patchmatch.h for code relating to the PatchMatch implementation. 
 
 TODO: 
+    make sure the usage states default values
     check the types to make sure they all make sense
     Check to make sure everything works
     add timing mechanism
@@ -97,7 +98,19 @@ int main(int argc, char* argv[]) {
     long total_patch_distance;
     double mean_patch_distance;
     
+    // Randomize the nearest neighbor field 
     long initial_total_patch_distance = 0;
+    PRINT("RANDOMIZE");
+    #pragma omp parallel for 
+    for(int y=0;y<Ann_height;y++) { 
+        for(int x=0;x<Ann_width;x++) { 
+                Ann(y,x,Y_COORD)=RAND_INT(0, B_height-patch_dim); 
+                Ann(y,x,X_COORD)=RAND_INT(0, B_width-patch_dim); 
+                Ann(y,x,D_COORD)=patch_SSD(A, B, x, y, Ann(y,x,X_COORD), Ann(y,x,Y_COORD), patch_dim); 
+        } 
+    } 
+    PRINT("RANDOMIZE END");
+    
     #pragma omp parallel for reduction(+:initial_total_patch_distance)
     for (int yy = 0; yy < Ann_height; ++yy) {
         for (int xx = 0; xx < Ann_width; ++xx) {
@@ -125,6 +138,10 @@ int main(int argc, char* argv[]) {
         }
     }
     write_pfm_file3(output_name, depth, Ann_width, Ann_height);
+    
+    NEWLINE;
+    cout << "Final Total Patch Distance: " << initial_total_patch_distance << endl;
+    cout << "Final Mean Patch Distance:  " << DOUBLE(initial_total_patch_distance)/DOUBLE(Ann_height*Ann_width) << endl;
     
     return 0;
 }

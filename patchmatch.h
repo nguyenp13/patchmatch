@@ -56,20 +56,6 @@ void patchmatch(
             double &mean_patch_distance
         ) {
     
-    // Randomize the nearest neighbor field 
-    PRINT("RANDOMIZE");
-    for(int y=0;y<Ann_height;y++) { 
-        for(int x=0;x<Ann_width;x++) { 
-                Ann(y,x,Y_COORD)=RAND_INT(0, B_height-patch_dim+1); 
-                Ann(y,x,X_COORD)=RAND_INT(0, B_width-patch_dim+1); 
-                Ann(y,x,D_COORD)=patch_SSD(A, B, x, y, Ann(y,x,X_COORD), Ann(y,x,Y_COORD), patch_dim); 
-        } 
-        if (y%100==0) {
-            TEST(y);
-        }
-    } 
-    PRINT("RANDOMIZE END");
-    
     bool going_down_and_right = true; 
     
     PRINT("ITERATION START");
@@ -93,35 +79,40 @@ void patchmatch(
                 int by;
                 int bx;
                 // Vertical offset
-                by = Ann(y-delta,x,Y_COORD)+delta; 
-                bx = Ann(y-delta,x,X_COORD); 
-                if (0<=by && by<B_height-patch_dim+1) {
-                    int ay = y; 
-                    int ax = x; 
-                    int old_patch_distance = Ann(y,x,D_COORD);
-                    int new_patch_distance = patch_SSD(A, B, ax, ay, bx, by, patch_dim);
-                    if (new_patch_distance<old_patch_distance) {
-                        Ann(y,x,Y_COORD) = by;
-                        Ann(y,x,X_COORD) = bx;
-                        Ann(y,x,D_COORD) = new_patch_distance;
+                if (0<=y-delta && y-delta<Ann_height) {
+                    by = Ann(y-delta,x,Y_COORD)+delta; 
+                    bx = Ann(y-delta,x,X_COORD); 
+                    if  (0<=by && by<B_height-patch_dim+1) {
+                        int ay = y; 
+                        int ax = x; 
+                        int old_patch_distance = Ann(y,x,D_COORD);
+                        int new_patch_distance = patch_SSD(A, B, ax, ay, bx, by, patch_dim);
+                        if (new_patch_distance<old_patch_distance) {
+                            Ann(y,x,Y_COORD) = by;
+                            Ann(y,x,X_COORD) = bx;
+                            Ann(y,x,D_COORD) = new_patch_distance;
+                        }
                     }
                 } 
                 // Horizontal offset
-                by = Ann(y,x,Y_COORD); 
-                bx = Ann(y,x-delta,X_COORD)+delta; 
-                if (0<=bx && bx<B_width-patch_dim+1) {
-                    int ay = y; 
-                    int ax = x; 
-                    int old_patch_distance = Ann(y,x,D_COORD);
-                    int new_patch_distance = patch_SSD(A, B, ax, ay, bx, by, patch_dim);
-                    if (new_patch_distance<old_patch_distance) {
-                        Ann(y,x,Y_COORD) = by;
-                        Ann(y,x,X_COORD) = bx;
-                        Ann(y,x,D_COORD) = new_patch_distance;
+                if (0<=x-delta && x-delta<Ann_width) {
+                    by = Ann(y,x,Y_COORD); 
+                    bx = Ann(y,x-delta,X_COORD)+delta; 
+                    if (0<=bx && bx<B_width-patch_dim+1) {
+                        int ay = y; 
+                        int ax = x; 
+                        int old_patch_distance = Ann(y,x,D_COORD);
+                        int new_patch_distance = patch_SSD(A, B, ax, ay, bx, by, patch_dim);
+                        if (new_patch_distance<old_patch_distance) {
+                            Ann(y,x,Y_COORD) = by;
+                            Ann(y,x,X_COORD) = bx;
+                            Ann(y,x,D_COORD) = new_patch_distance;
+                        }
                     }
                 } 
             } 
         } 
+        PRINT("Belief Propogation end");
         ///////////////////////////////////////
         total_patch_distance = 0;
         // Calculate total and mean patch distances
@@ -138,12 +129,21 @@ void patchmatch(
         TEST(mean_patch_distance);
         NEWLINE;
         ///////////////////////////////////////
-        PRINT("Belief Propogation end");
         going_down_and_right = !going_down_and_right; 
         
+//                        TEST(5);
+//                        TEST(bx_new);
+//                        TEST(by_new);
+//                        TEST(B_width);
+//                        TEST(B_height);
+//                        TEST(x);
+//                        TEST(y);
+//                        TEST(A_height);
+//                        TEST(A_height);
+//                        TEST(patch_dim);                        
         // Random Search
-        for(int y=start_y;y<Ann_height;y+=delta) { 
-            for(int x=start_x;x<Ann_width;x+=delta) { 
+        for(int y=0;y<Ann_height;y++) { 
+            for(int x=0;x<Ann_width;x++) { 
                 int bx = Ann(y,x,X_COORD);
                 int by = Ann(y,x,Y_COORD);
                 for(int radius_index=random_search_size_exponent; 0<radius_index; radius_index--) {
@@ -153,8 +153,8 @@ void patchmatch(
                     int search_box_max_x = MIN(B_width-patch_dim+1,bx+radius);
                     int search_box_max_y = MIN(B_height-patch_dim+1,by+radius);
                     for(int search_attempt_count=0; search_attempt_count<num_random_search_attempts; search_attempt_count++) {
-                        int bx_new = RAND_INT(search_box_min_x,search_box_max_x+1);
-                        int by_new = RAND_INT(search_box_min_y,search_box_max_y+1);
+                        int bx_new = RAND_INT(search_box_min_x,search_box_max_x);
+                        int by_new = RAND_INT(search_box_min_y,search_box_max_y);
                         int old_patch_distance = Ann(y,x,D_COORD);
                         int new_patch_distance = patch_SSD(A, B, x, y, bx_new, by_new, patch_dim);
                         if (new_patch_distance<old_patch_distance) {
@@ -162,11 +162,11 @@ void patchmatch(
                             Ann(y,x,X_COORD) = bx_new;
                             Ann(y,x,D_COORD) = new_patch_distance;
                         }
-                        
                     }
                 }
             }
         }
+        TEST(8);
         ///////////////////////////////////////
         total_patch_distance = 0;
         // Calculate total and mean patch distances
