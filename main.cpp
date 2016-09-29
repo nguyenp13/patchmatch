@@ -3,12 +3,6 @@
 
 This is our main executable that wraps our PatchMatch implementation. See patchmatch.h for code relating to the PatchMatch implementation. 
 
-TODO: 
-    make sure the usage states default values
-    check the types to make sure they all make sense
-    Check to make sure everything works
-    add timing mechanism
-
 */
 
 #include <chrono>
@@ -42,13 +36,13 @@ void usage() {
                     "\n"
                     "Options: \n"
                     "\n"
-                    "    -patch_dim <patch_dim>: This int value determines the size of the patches. The patches will be size <patch_dim> by <patch_dim>. \n"
+                    "    -patch_dim <patch_dim>: This int value determines the size of the patches. The patches will be size <patch_dim> by <patch_dim>. The default value is 5.  \n"
                     "\n"
-                    "    -num_iterations <num_iterations>: This int value is the fixed number of times the PatchMatch algorithm will run before terminating. "
+                    "    -num_iterations <num_iterations>: This int value is the fixed number of times the PatchMatch algorithm will run before terminating.  The default value is 4. "
                     "\n"
-                    "    -random_search_size_exponent <random_search_size_exponent>: This int value determines the largest neighborhood size around a patch in the nearest neighbor field to conduct the random search. When we are conducting the random search around patch p in our nearest neighbor field, the largest neighborhood around p we will search will be of size 2^<random_search_size_exponent>. \n"
+                    "    -random_search_size_exponent <random_search_size_exponent>: This int value determines the largest neighborhood size around a patch in the nearest neighbor field to conduct the random search. When we are conducting the random search around patch p in our nearest neighbor field, the largest neighborhood around p we will search will be of size 2^<random_search_size_exponent>. The default value is 3. \n"
                     "\n"
-                    "    -random_search_attempts <random_search_attempts>: This int value defines how many neighbors we will compare to in each iteration of the random search. \n"
+                    "    -random_search_attempts <random_search_attempts>: This int value defines how many neighbors we will compare to in each iteration of the random search. The default value is 8. \n"
                     "\n"
            );
     exit(1);
@@ -100,7 +94,6 @@ int main(int argc, char* argv[]) {
     
     // Randomize the nearest neighbor field 
     long initial_total_patch_distance = 0;
-    PRINT("RANDOMIZE");
     #pragma omp parallel for 
     for(int y=0;y<Ann_height;y++) { 
         for(int x=0;x<Ann_width;x++) { 
@@ -109,7 +102,6 @@ int main(int argc, char* argv[]) {
                 Ann(y,x,D_COORD)=patch_SSD(A, B, x, y, Ann(y,x,X_COORD), Ann(y,x,Y_COORD), patch_dim); 
         } 
     } 
-    PRINT("RANDOMIZE END");
     
     #pragma omp parallel for reduction(+:initial_total_patch_distance)
     for (int yy = 0; yy < Ann_height; ++yy) {
@@ -122,7 +114,6 @@ int main(int argc, char* argv[]) {
     cout << "Initial Mean Patch Distance:  " << DOUBLE(initial_total_patch_distance)/DOUBLE(Ann_height*Ann_width) << endl;
     fflush(stdout);
     
-    PRINT(1);
     patchmatch(A, B, Ann, A_height, A_width, B_height, B_width, Ann_height, Ann_width, patch_dim, num_iterations, random_search_size_exponent, num_random_search_attempts, total_patch_distance, mean_patch_distance);
     
     // Write output to .pfm file
@@ -140,8 +131,8 @@ int main(int argc, char* argv[]) {
     write_pfm_file3(output_name, depth, Ann_width, Ann_height);
     
     NEWLINE;
-    cout << "Final Total Patch Distance: " << initial_total_patch_distance << endl;
-    cout << "Final Mean Patch Distance:  " << DOUBLE(initial_total_patch_distance)/DOUBLE(Ann_height*Ann_width) << endl;
+    cout << "Final Total Patch Distance: " << total_patch_distance << endl;
+    cout << "Final Mean Patch Distance:  " << DOUBLE(total_patch_distance)/DOUBLE(Ann_height*Ann_width) << endl;
     
     return 0;
 }

@@ -58,9 +58,7 @@ void patchmatch(
     
     bool going_down_and_right = true; 
     
-    PRINT("ITERATION START");
     for(int iteration_index=0; iteration_index<num_iterations; iteration_index++) { 
-        TEST(iteration_index);
         int delta, start_x, start_y; 
         if (going_down_and_right) { 
             delta = 1; 
@@ -73,7 +71,6 @@ void patchmatch(
         }
         
         // Belief Propogation 
-        PRINT("Belief Propogation START");
         for(int y=start_y; 0<=y && y<Ann_height; y+=delta) { 
             for(int x=start_x; 0<=x && x<Ann_width; x+=delta) { 
                 int by;
@@ -112,35 +109,9 @@ void patchmatch(
                 } 
             } 
         } 
-        PRINT("Belief Propogation end");
-        ///////////////////////////////////////
-        total_patch_distance = 0;
-        // Calculate total and mean patch distances
-        for(int y=0; y<Ann_height; y++) { 
-            for(int x=0; x<Ann_width; x++) { 
-                total_patch_distance += LONG(Ann(y,x,D_COORD));
-            }
-        }
-        mean_patch_distance = DOUBLE(total_patch_distance)/DOUBLE(Ann_height*Ann_width);
-        NEWLINE;
-        NEWLINE;
-        PRINT("Pre-random search");
-        TEST(total_patch_distance);
-        TEST(mean_patch_distance);
-        NEWLINE;
-        ///////////////////////////////////////
+        
         going_down_and_right = !going_down_and_right; 
         
-//                        TEST(5);
-//                        TEST(bx_new);
-//                        TEST(by_new);
-//                        TEST(B_width);
-//                        TEST(B_height);
-//                        TEST(x);
-//                        TEST(y);
-//                        TEST(A_height);
-//                        TEST(A_height);
-//                        TEST(patch_dim);                        
         // Random Search
         for(int y=0;y<Ann_height;y++) { 
             for(int x=0;x<Ann_width;x++) { 
@@ -166,24 +137,7 @@ void patchmatch(
                 }
             }
         }
-        TEST(8);
-        ///////////////////////////////////////
-        total_patch_distance = 0;
-        // Calculate total and mean patch distances
-        for(int y=0; y<Ann_height; y++) { 
-            for(int x=0; x<Ann_width; x++) { 
-                total_patch_distance += LONG(Ann(y,x,D_COORD));
-            }
-        }
-        mean_patch_distance = DOUBLE(total_patch_distance)/DOUBLE(Ann_height*Ann_width);
-        PRINT("Post-random search");
-        TEST(total_patch_distance);
-        TEST(mean_patch_distance);
-        NEWLINE;
-        NEWLINE;
-        ///////////////////////////////////////
     }
-    PRINT("ITERATION end");
     
     total_patch_distance = 0;
     // Calculate total and mean patch distances
